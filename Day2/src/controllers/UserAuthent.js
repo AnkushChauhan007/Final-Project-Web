@@ -1,0 +1,46 @@
+const User=require("../models/user");
+const validate=require('../../utils/validators');
+const bcrypt=require("brypt");
+const jwt=require("jsonwebtoken");
+const register=async(req,res)=>{
+    try{
+        // validate the data first
+        validate(req.body);
+        const {firstName,emailId,password}=req.body;
+    req.body.password=bcrypt.hash(password,10);  // paswword in Hash code form
+
+    //
+    const token=jwt.sign({emailId},process.env.JWT_KEY,{expiresIn:60*60});
+    res.cookie('token',{maxAge:60*60*1000});
+    res.status(201).send("User Register Succesfully");
+      const user=await User.create(req.body);
+    }
+    catch(err){
+        res.status(400).send("Error :"+err);
+    }
+}
+const login=async(req,res)=>{
+    try{
+        const {emailId,password}=req.body;
+        if(!emailId)throw new Error("Invalid Credentials");
+        if(!password) throw Error("Invalid Credentials");
+        const user =await User.findOne({emailId});
+      const match=  bcrypt.compare(password,user.password);
+      if(!match) throw new Error("Invalid Credentials");
+      const token=jwt.sign({emailId},process.env.JWT_KEY,{expiresIn:60*60});
+    res.cookie('token',{maxAge:60*60*1000});
+    res.status(200).send("Logged In Successfully");
+    }
+    catch(err){
+        res.status(401).send("Error:"+err);
+    }
+}
+const logout=async(req,res)=>{
+    try{
+           
+    }
+    catch(err){
+
+    }
+}
+module.exports=validate;
